@@ -20,21 +20,20 @@ jobs:
         with:
           version: 10
 
-      - name: Install dependencies
+      - name: Install worker dependencies
         run: cd worker && pnpm install --no-frozen-lockfile
 
       - name: Apply D1 schema
-        run: cd worker && pnpm exec wrangler d1 execute temp-email-db --file=../../db/schema.sql --remote --yes
+        run: cd worker && pnpm exec wrangler d1 execute temp-email-db --file=../db/schema.sql --remote --yes
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Apply migration patches
         run: |
-          for f in ../../db/2024-*.sql ../../db/2025-*.sql ../../db/2026-*.sql; do
-            [ -f "$f" ] && echo "Applying $f" && pnpm exec wrangler d1 execute temp-email-db --file="$f" --remote --yes && echo "OK: $f"
+          for f in ../db/2024-*.sql ../db/2025-*.sql ../db/2026-*.sql; do
+            [ -f "$f" ] && echo "Applying $f" && cd worker && pnpm exec wrangler d1 execute temp-email-db --file="$f" --remote --yes && cd ..
           done
-        working-directory: worker
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
